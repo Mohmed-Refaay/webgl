@@ -1,5 +1,5 @@
 import "./style.css";
-import { createProgram, createShader } from "../gl/helpers.js";
+import { createProgram, createShader } from "./helpers.js";
 
 import * as dat from "dat.gui";
 import { m3, m4 } from "./math";
