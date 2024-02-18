@@ -1,8 +1,8 @@
 import "./style.css";
-import { createProgram, createShader } from "./helpers.js";
+import { createProgram, createShader } from "./utils/helpers.js";
 
 import * as dat from "dat.gui";
-import { m3, m4 } from "./math";
+import { m3, m4 } from "./utils/math";
 
 const data = {
   x: 200,
@@ -21,7 +21,7 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
 
-  helloTriangle();
+  main();
 }
 
 animate();
@@ -42,7 +42,7 @@ gui.add(data, "angleY", -Math.PI, Math.PI, 0.1);
 
 gui.add(data, "angleZ", -Math.PI, Math.PI, 0.1);
 
-function helloTriangle() {
+function main() {
   const canvas = document.getElementById("demo-canvas");
   if (!canvas) {
     return;
@@ -429,7 +429,7 @@ function helloTriangle() {
 }
 
 try {
-  helloTriangle();
+  main();
   console.log("Runs!");
 } catch (e) {
   console.log(e);
