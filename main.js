@@ -371,9 +371,12 @@ function main() {
     gl.STATIC_DRAW,
   );
 
-  var matrix = m4.projection(
+  var matrix = m4.orthographic(
+    0,
     gl.canvas.clientWidth,
+    0,
     gl.canvas.clientHeight,
+    -400,
     400,
   );
   matrix = m4.translate(matrix, data.x, data.y, data.z);
@@ -381,7 +384,7 @@ function main() {
   matrix = m4.yRotate(matrix, data.angleY);
   matrix = m4.zRotate(matrix, data.angleZ);
   matrix = m4.scale(matrix, data.sx, data.sy, data.sz);
-  matrix = m4.translate(matrix, -50, -75, 0);
+  // matrix = m4.translate(matrix, -50, -75, 0);
 
   const matrixUniformLocation = gl.getUniformLocation(
     program,
