@@ -1,0 +1,16 @@
+html,
+body {
+  margin: 0;
+  padding: 25px;
+  overflow: hidden;
+  background-color: #2a2a2a;
+}
+
+canvas {
+  max-width: 800px;
+  max-height: 800px;
+  width: 100%;
+  aspect-ratio: 1/1;
+
+  background-color: red;
+}
