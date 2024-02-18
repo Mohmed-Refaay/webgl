@@ -18,14 +18,6 @@ const data = {
 
 let time = 0;
 
-function animate() {
-  requestAnimationFrame(animate);
-
-  main();
-}
-
-animate();
-
 const gui = new dat.GUI();
 
 gui.add(data, "x", -1000, 1000, 1);
@@ -54,9 +46,6 @@ function main() {
     return;
   }
 
-  gl.enable(gl.CULL_FACE);
-  gl.enable(gl.DEPTH_TEST);
-
   const vertexShader = createShader(
     gl,
     `
@@ -68,7 +57,7 @@ function main() {
 
         void main() {
           v_color = a_color;
-          gl_Position = u_matrix * a_position ;
+          gl_Position = u_matrix * a_position;
         }
     `,
     gl.VERTEX_SHADER,
@@ -371,64 +360,72 @@ function main() {
     gl.STATIC_DRAW,
   );
 
-  var matrix = m4.orthographic(
-    0,
-    gl.canvas.clientWidth,
-    0,
-    gl.canvas.clientHeight,
-    -400,
-    400,
-  );
-  matrix = m4.translate(matrix, data.x, data.y, data.z);
-  matrix = m4.xRotate(matrix, data.angleX);
-  matrix = m4.yRotate(matrix, data.angleY);
-  matrix = m4.zRotate(matrix, data.angleZ);
-  matrix = m4.scale(matrix, data.sx, data.sy, data.sz);
-  // matrix = m4.translate(matrix, -50, -75, 0);
+  draw();
 
-  const matrixUniformLocation = gl.getUniformLocation(
-    program,
-    "u_matrix",
-  );
+  function draw() {
+    requestAnimationFrame(draw);
+    let matrix = m4.orthographic(
+      0,
+      gl.canvas.clientWidth,
+      0,
+      gl.canvas.clientHeight,
+      -400,
+      400,
+    );
+    matrix = m4.translate(matrix, data.x, data.y, data.z);
+    matrix = m4.xRotate(matrix, data.angleX);
+    matrix = m4.yRotate(matrix, data.angleY);
+    matrix = m4.zRotate(matrix, data.angleZ);
+    matrix = m4.scale(matrix, data.sx, data.sy, data.sz);
+    matrix = m4.translate(matrix, -50, -75, 0);
 
-  // resize canvas
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
+    const matrixUniformLocation = gl.getUniformLocation(
+      program,
+      "u_matrix",
+    );
 
-  // tell webgl where is the clip space
-  gl.viewport(0, 0, canvas.width, canvas.height);
+    // resize canvas
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
-  // clear canvas
-  gl.clearColor(0, 0.1, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // tell webgl where is the clip space
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
-  gl.useProgram(program);
-  gl.enableVertexAttribArray(positionAttribLocation);
-  gl.enableVertexAttribArray(colorAttribLocation);
+    // clear canvas
+    gl.clearColor(0, 0.1, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    // gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
 
-  gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+    gl.useProgram(program);
+    gl.enableVertexAttribArray(positionAttribLocation);
+    gl.enableVertexAttribArray(colorAttribLocation);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.vertexAttribPointer(
-    positionAttribLocation,
-    3,
-    gl.FLOAT,
-    false,
-    0,
-    0,
-  );
+    gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.vertexAttribPointer(
-    colorAttribLocation,
-    3,
-    gl.UNSIGNED_BYTE,
-    true,
-    0,
-    0,
-  );
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.vertexAttribPointer(
+      positionAttribLocation,
+      3,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
 
-  gl.drawArrays(gl.TRIANGLES, 0, 16 * 6);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.vertexAttribPointer(
+      colorAttribLocation,
+      3,
+      gl.UNSIGNED_BYTE,
+      true,
+      0,
+      0,
+    );
+
+    gl.drawArrays(gl.TRIANGLES, 0, 16 * 6);
+  }
 }
 
 try {
