@@ -21,9 +21,6 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
 
-  // data.angleY += 0.01;
-  // data.angleZ -= 0.01;
-
   helloTriangle();
 }
 
@@ -31,23 +28,19 @@ animate();
 
 const gui = new dat.GUI();
 
-gui.add(data, "x", -1000, 1000, 1).onChange(helloTriangle);
-gui.add(data, "y", -1000, 1000, 1).onChange(helloTriangle);
-gui.add(data, "z", -1000, 1000, 1).onChange(helloTriangle);
+gui.add(data, "x", -1000, 1000, 1);
+gui.add(data, "y", -1000, 1000, 1);
+gui.add(data, "z", -1000, 1000, 1);
 
-gui.add(data, "sx", -20, 20, 0.1).onChange(helloTriangle);
-gui.add(data, "sy", -20, 20, 0.1).onChange(helloTriangle);
-gui.add(data, "sz", -20, 20, 0.1).onChange(helloTriangle);
+gui.add(data, "sx", -20, 20, 0.1);
+gui.add(data, "sy", -20, 20, 0.1);
+gui.add(data, "sz", -20, 20, 0.1);
 
-gui
-  .add(data, "angleX", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
-gui
-  .add(data, "angleY", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
-gui
-  .add(data, "angleZ", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
+gui.add(data, "angleX", -Math.PI, Math.PI, 0.1);
+
+gui.add(data, "angleY", -Math.PI, Math.PI, 0.1);
+
+gui.add(data, "angleZ", -Math.PI, Math.PI, 0.1);
 
 function helloTriangle() {
   const canvas = document.getElementById("demo-canvas");
