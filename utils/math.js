@@ -73,7 +73,7 @@ export const m3 = {
   },
 };
 
-export var m4 = {
+export const m4 = {
   projection: function (width, height, depth) {
     // Note: This matrix flips the Y axis so 0 is at the top.
     // prettier-ignore
@@ -83,6 +83,34 @@ export var m4 = {
       0, 0, 2 / depth, 0,
       -1, 1, 0, 1,
     ];
+  },
+  perspective: function (fieldOfView, aspect, near, far) {
+    const fovRad = (fieldOfView * Math.PI) / 180;
+
+    var f = Math.tan(Math.PI * 0.5 - 0.5 * fovRad);
+    var rangeInv = 1.0 / (near - far);
+
+    // prettier-ignore
+    return [
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (near + far) * rangeInv, -1,
+      0, 0, near * far * rangeInv * 2, 0
+    ];
+  },
+  orthographic(left, right, top, bottom, near, far) {
+    // prettier-ignore
+    return [
+      2/(right - left), 0 ,0, 0,
+      0, 2/(top - bottom), 0, 0,
+      0, 0, 2/(near - far), 0,
+
+      (left + right) / (left - right),
+      -(top + bottom) / (top - bottom),
+      (near + far) / (near - far),
+      1
+
+    ]
   },
 
   multiply: function (a, b) {

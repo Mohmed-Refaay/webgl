@@ -1,13 +1,13 @@
 import "./style.css";
-import { createProgram, createShader } from "../gl/helpers.js";
+import { createProgram, createShader } from "./utils/helpers.js";
 
 import * as dat from "dat.gui";
-import { m3, m4 } from "./math";
+import { m4 } from "./utils/math";
 
 const data = {
-  x: 200,
-  y: 200,
-  z: 0,
+  x: 0,
+  y: 0,
+  z: -400,
   sx: 1,
   sy: 1,
   sz: 1,
@@ -16,40 +16,21 @@ const data = {
   angleZ: 0,
 };
 
-let time = 0;
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  // data.angleY += 0.01;
-  // data.angleZ -= 0.01;
-
-  helloTriangle();
-}
-
-animate();
-
 const gui = new dat.GUI();
 
-gui.add(data, "x", -1000, 1000, 1).onChange(helloTriangle);
-gui.add(data, "y", -1000, 1000, 1).onChange(helloTriangle);
-gui.add(data, "z", -1000, 1000, 1).onChange(helloTriangle);
+gui.add(data, "x", -1000, 1000, 1);
+gui.add(data, "y", -1000, 1000, 1);
+gui.add(data, "z", -1000, 0, 1);
 
-gui.add(data, "sx", -20, 20, 0.1).onChange(helloTriangle);
-gui.add(data, "sy", -20, 20, 0.1).onChange(helloTriangle);
-gui.add(data, "sz", -20, 20, 0.1).onChange(helloTriangle);
+gui.add(data, "sx", -20, 20, 0.1);
+gui.add(data, "sy", -20, 20, 0.1);
+gui.add(data, "sz", -20, 20, 0.1);
 
-gui
-  .add(data, "angleX", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
-gui
-  .add(data, "angleY", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
-gui
-  .add(data, "angleZ", -Math.PI, Math.PI, 0.1)
-  .onChange(helloTriangle);
+gui.add(data, "angleX", -Math.PI, Math.PI, 0.1);
+gui.add(data, "angleY", -Math.PI, Math.PI, 0.1);
+gui.add(data, "angleZ", -Math.PI, Math.PI, 0.1);
 
-function helloTriangle() {
+function main() {
   const canvas = document.getElementById("demo-canvas");
   if (!canvas) {
     return;
@@ -60,9 +41,6 @@ function helloTriangle() {
   if (!gl) {
     return;
   }
-
-  gl.enable(gl.CULL_FACE);
-  gl.enable(gl.DEPTH_TEST);
 
   const vertexShader = createShader(
     gl,
@@ -75,7 +53,7 @@ function helloTriangle() {
 
         void main() {
           v_color = a_color;
-          gl_Position = u_matrix * a_position ;
+          gl_Position = u_matrix * a_position;
         }
     `,
     gl.VERTEX_SHADER,
@@ -108,6 +86,90 @@ function helloTriangle() {
 
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  setGeometry(gl);
+
+  const colorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  setColor(gl);
+
+  draw();
+
+  function draw() {
+    data.angleY += 0.01;
+    requestAnimationFrame(draw);
+    let matrix = m4.perspective(
+      45,
+      gl.canvas.width / gl.canvas.height,
+      1,
+      1000,
+    );
+    matrix = m4.multiply(
+      matrix,
+      // prettier-ignore
+      [
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        1, 1, 1, 1
+      ],
+    );
+    matrix = m4.translate(matrix, data.x, data.y, data.z);
+    matrix = m4.xRotate(matrix, data.angleX);
+    matrix = m4.yRotate(matrix, data.angleY);
+    matrix = m4.zRotate(matrix, data.angleZ);
+    matrix = m4.scale(matrix, data.sx, data.sy, data.sz);
+    matrix = m4.translate(matrix, -50, -75, 0);
+
+    const matrixUniformLocation = gl.getUniformLocation(
+      program,
+      "u_matrix",
+    );
+
+    // resize canvas
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    // tell webgl where is the clip space
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    // clear canvas
+    gl.clearColor(0, 0.1, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    // gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+
+    gl.useProgram(program);
+    gl.enableVertexAttribArray(positionAttribLocation);
+    gl.enableVertexAttribArray(colorAttribLocation);
+
+    gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.vertexAttribPointer(
+      positionAttribLocation,
+      3,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.vertexAttribPointer(
+      colorAttribLocation,
+      3,
+      gl.UNSIGNED_BYTE,
+      true,
+      0,
+      0,
+    );
+
+    gl.drawArrays(gl.TRIANGLES, 0, 16 * 6);
+  }
+}
+
+function setGeometry(gl) {
   gl.bufferData(
     gl.ARRAY_BUFFER,
     // prettier-ignore
@@ -241,9 +303,9 @@ function helloTriangle() {
       0, 150,   0]),
     gl.STATIC_DRAW,
   );
+}
 
-  const colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+function setColor(gl) {
   gl.bufferData(
     gl.ARRAY_BUFFER,
     // prettier-ignore
@@ -377,66 +439,9 @@ function helloTriangle() {
     160, 160, 220]),
     gl.STATIC_DRAW,
   );
-
-  var matrix = m4.projection(
-    gl.canvas.clientWidth,
-    gl.canvas.clientHeight,
-    400,
-  );
-  matrix = m4.translate(matrix, data.x, data.y, data.z);
-  matrix = m4.xRotate(matrix, data.angleX);
-  matrix = m4.yRotate(matrix, data.angleY);
-  matrix = m4.zRotate(matrix, data.angleZ);
-  matrix = m4.scale(matrix, data.sx, data.sy, data.sz);
-  matrix = m4.translate(matrix, -50, -75, 0);
-
-  const matrixUniformLocation = gl.getUniformLocation(
-    program,
-    "u_matrix",
-  );
-
-  // resize canvas
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-
-  // tell webgl where is the clip space
-  gl.viewport(0, 0, canvas.width, canvas.height);
-
-  // clear canvas
-  gl.clearColor(0, 0.1, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  gl.useProgram(program);
-  gl.enableVertexAttribArray(positionAttribLocation);
-  gl.enableVertexAttribArray(colorAttribLocation);
-
-  gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.vertexAttribPointer(
-    positionAttribLocation,
-    3,
-    gl.FLOAT,
-    false,
-    0,
-    0,
-  );
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.vertexAttribPointer(
-    colorAttribLocation,
-    3,
-    gl.UNSIGNED_BYTE,
-    true,
-    0,
-    0,
-  );
-
-  gl.drawArrays(gl.TRIANGLES, 0, 16 * 6);
 }
-
 try {
-  helloTriangle();
+  main();
   console.log("Runs!");
 } catch (e) {
   console.log(e);
